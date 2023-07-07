@@ -154,6 +154,10 @@ create tablespace jf_data datafile '/opt/oracle/app/oracle/oradata/iptvbss/jfdat
 create tablespace jf_index datafile '/opt/oracle/app/oracle/oradata/iptvbss/jfindex.dbf' size 1000M autoextend on next 500M maxsize unlimited;
 
 
+--删除表空间
+drop tablespace oraclelearn01;
+drop tablespace oraclelearn01 including contents and datafiles;  --删除表空间(包括内容和数据文件)
+
 
 --三、查看表空间使用情况
 Select     Upper(Free.TableSpace_Name) As "表空间名"
