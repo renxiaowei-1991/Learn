@@ -1,3 +1,5 @@
+https://blog.csdn.net/qq_64557330?type=blog
+
 1、Hadoop
 1.1、Hadoop介绍
 1) Hadoop是一个由Apache基金会所开发的分布式系统基础架构
