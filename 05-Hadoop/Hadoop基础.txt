@@ -1,0 +1,234 @@
+1、Hadoop
+1.1、Hadoop介绍
+1) Hadoop是一个由Apache基金会所开发的分布式系统基础架构
+2) 主要解决海量数据的存储和海量数据的分析计算问题
+3) 广义上，Hadoop通常指Hadoop生态圈
+
+1.2、Hadoop版本
+Apache：最原始(最基础)的版本
+Cloudera：内部集成了很多大数据框架。产品CDH
+Hortonworks：文档较好。产品HDP
+	被Cloudera收购，推出了：产品CDP
+
+1.3、Hadoop优势
+1) 高可靠性：Hadoop底层维护多个数据副本，保证数据可靠性
+2) 高扩展性：在集群间分配任务数据，可方便的扩展数以千计的节点
+3) 高效性：MapReduce思想，Hadoop并行执行
+4) 高容错性：能够将失败的任务重新分配
+
+1.4、Hadoop生态圈
+数据来源层
+	数据库(结构化数据)
+	文件日志(半结构化数据)
+	视频、ppt等(非结构化数据)
+
+数据传输层
+	Sqoop数据传输: 结构化数据
+	Flume日志采集: 半结构化数据
+	Kafka消息队列: 各类数据
+
+数据存储层
+	HDFS文件存储
+	HBase列式数据库
+	Kafka消息队列
+
+资源管理层
+	YARN资源管理
+
+数据计算层
+	MapReduce离线计算: Hive数据查询
+	Spark Core内存计算
+		Spark Mlib数据挖掘
+		Spark Sql数据查询
+		Spark Streaming实时计算
+	Storm实时计算
+	Flink实时计算
+
+任务调度层
+	Oozie任务调度
+	Azkaban任务调度
+
+业务模型层
+	业务模型
+	数据可视化
+	业务应用
+	多维分析OLAP
+		kylin
+		ClickHouse
+		ElasticSearch
+		
+	即席查询
+		Presto
+		Impala
+		
+
+
+2、HDFS
+2.1、HDFS优点
+1) 高容错性：数据自动保存多副本，通过增加副本的方式(参数配置)，提高容错性。某个副本丢失，可以自动恢复。
+2) 适合处理大数据：
+	数据规模：能够处理数据规模达GB、TB、PB
+	文件规模：能够处理百万规模以上的文件数量
+3) 廉价机器：可以构建在廉价机器上，通过多副本机制，提高可靠性
+
+2.2、HDFS缺点
+1) 延时高：不适合低延时数据访问，例如毫秒级别的数据访问
+2) 无法高效处理小文件：
+	存储大量小文件，会占用NameNode大量的内存来存储文件目录和块信息。NameNode的内存是有限的。
+	小文件存储的寻址时间会超过读取时间，违反了HDFS的设计目标
+3) 不支持并发写入、文件随机修改
+	一个文件只能有一个写，不允许多个线程同时写
+	仅支持数据追加，不支持文件的随机修改
+
+2.3、HDFS组成
+1) NameNode(NM)：就是Master，是一个管理者
+	存储文件的元数据(文件名、文件目录结构、文件属性等)，以及每个文件的块列表和块所在的DataNode等
+	(1) 管理HDFS的名称空间
+	(2) 配置副本策略
+	(3) 管理数据库(Block)映射信息
+	(4) 处理客户端读写请求
+2) DataNode(DN)：就是Slave。NameNode下达命令，DataNode执行实际的操作
+	在本地文件系统存储文件块数据，以及块数据的校验和
+	(1) 存储实际的数据块
+	(2) 执行数据库的读/写操作
+3) Client：就是客户端
+	(1) 文件切分。文件上传HDFS的时候，Client将文件切分成一个一个的Block，然后进行上传
+	(2) 与NameNode交互，获取文件的位置信息
+	(3) 与DataNode交互，读取或者写入文件
+	(4) Client提供一些命令来管理HDFS，比如NameNode格式化
+	(5) Client可以通过一些命令来访问HDFS，比如对HDFS增删改查操作
+4) Secondary NameNode：辅助NameNode。并非NameNode的热备。当NameNode挂掉的时候，它并不能马上替换NameNode并提供服务。
+	每隔一段时间对NameNode元数据备份
+	(1) 辅助NameNode，分担其工作量，比如定期合并Fsimage和Edits，并推送给NameNode
+	(2) 在紧急情况下，可辅助恢复NameNode
+
+2.4、HDFS常识
+1) HDFS文件块大小(Block)
+	HDFS文件在物理上是分块存储(Block)，块的大小可以通过配置参数(dfs.blocksize)设置。
+	Hadoop1.x默认64M，Hadoop2.x/3.x默认128M
+	HDFS块的大小设置主要取决于磁盘传输速率。
+		HDFS的块设置太小，会增加寻址时间
+		HDFS的块设置太大，磁盘传输数据时间不合理，太慢
+
+2.5、HDFS读写流程
+	https://blog.csdn.net/qq_64557330/article/details/126080408?spm=1001.2014.3001.5502
+
+HDFS写数据流程(Client->HDFS)
+	1) Client(客户端)->NameNode: 向NameNode请求上传文件/user/atguigu/ss.avi
+	2) NameNode->Client(客户端): 响应可以上传文件
+		检查目录数是否可以创建文件
+		2.1 检查权限
+		2.2 检查目录结构(目录是否存在)
+	3) Client(客户端)->NameNode: 请求上传第一个Block(0-128M)，请返回DataNode
+	4) NameNode->Client(客户端): 返回dn1,dn2,dn3节点，表示采用这三个节点存储数据
+		元数据:副本存储节点选择
+		4.1 本地节点
+		4.2 其他机架一个节点
+		4.3 其他机架另一个节点
+	5) Client(客户端)->DataNode(dn1,dn2,dn3): 请求建立Block传输通道
+	6) DataNode(dn1,dn2,dn3)->Client(客户端): (dn1,dn2,dn3)应答成功
+	7) Client(客户端)->DataNode(dn1,dn2,dn3): 传输数据 Packet(64k)(chunk 512byte+chunksum 4byte)
+	注意：
+		HDFS写数据的过程中，NameNode会选择距离待上传数据最近距离的DataNode接收数据。
+		这个距离根据 网络拓扑-节点距离计算
+HDFS读数据流程(HDFS->Client)
+	1) Client(客户端)->NameNode: 请求下载文件/user/atguigu/ss.avi
+	2) NameNode->Client(客户端): 返回目标文件的元数据
+		{[blk_1,blk_2],[blk_1,blk_2],[blk_1,blk_2]}
+	3) Client(客户端)->DataNode(dn1,dn2,dn3): 请求读数据blk_1
+	4) DataNode(dn1,dn2,dn3)->Client(客户端): 传输数据
+	5) Client(客户端)->DataNode(dn1,dn2,dn3): 请求读数据blk_2
+	6) DataNode(dn1,dn2,dn3)->Client(客户端): 传输数据
+	注意：
+		读数据不能并发读，要串行读，先读完第一块，再读第二块
+
+2.6、NameNode和SecondaryNameNode工作机制
+	https://blog.csdn.net/qq_64557330/article/details/126080408?spm=1001.2014.3001.5502
+	
+第一阶段：NameNode启动
+	1) 第一次启动NameNode格式化后，创建Fsimage和Edits文件。如果不是第一次启动，直接加载编辑日志和镜像文件到内存
+	2) 客户端对元数据进行增删改的请求
+	3) NameNode记录操作日志，更新滚动日志
+	4) nameNode在内存中对元数据进行增删改
+第二阶段：Secondary NameNode工作
+	1) Secondary NameNode询问NameNode是否需要CheckPoine。直接带回NameNode是否检查结果
+	2) Secondary NameNode请求执行CheckPoint
+	3) NameNode滚动正在写的Edits日志
+	4) 将滚动前的编辑日志和镜像文件拷贝到Secondary NameNode
+	5) Secondary NameNode加载编辑日志和镜像文件到内存，并合并
+	6) 生成新的镜像文件fsimage.chkpoint
+	7) 拷贝fsimage.chkpoint到NameNode
+	8) NameNode将fsimage.chkpoint重新命名成fsimage
+
+思考：NameNode中的元数据是存储在哪里的？
+首先，我们做个假设，如果存储在NameNode节点的磁盘中，因为经常需要进行随机访问，还有响应客户请求，必然是效率过低。因此，元数据需要存放在内存中。但如果只存在内存中，一旦断电，元数据丢失，整个集群就无法工作了。因此产生在磁盘中备份元数据的FsImage。
+这样又会带来新的问题，当在内存中的元数据更新时，如果同时更新FsImage，就会导致效率过低，但如果不更新，就会发生一致性问题，一旦NameNode节点断电，就会产生数据丢失。因此，引入Edits文件（只进行追加操作，效率很高）。每当元数据有更新或者添加元数据时，修改内存中的元数据并追加到Edits中。这样，一旦NameNode节点断电，可以通过FsImage和Edits的合并，合成元数据。
+但是，如果长时间添加数据到Edits中，会导致该文件数据过大，效率降低，而且一旦断电，恢复元数据需要的时间过长。因此，需要定期进行FsImage和Edits的合并，如果这个操作由NameNode节点完成，又会效率过低。因此，引入一个新的节点SecondaryNamenode，专门用于FsImage和Edits的合并。
+
+
+2.7、DataNode工作机制
+	https://blog.csdn.net/qq_64557330/article/details/126080408?spm=1001.2014.3001.5502
+
+	1) DataNode->NameNode: DataNode启动后向NameNode注册
+	2) NameNode->DataNode: DataNode注册成功
+	3) DataNode->NameNode: 以后每周期(6小时)上报所有块信息
+	4) DataNode->NameNode: 心跳每3秒一次，心跳返回结果带有NameNode给该DataNode的命令
+	5) DataNode<->NameNode: 超过10分钟+30秒没有收到DataNode的心跳，则认为该节点不可用
+	注意：
+		心跳3秒返回是告诉NameNode自己没有挂，每周期(6小时)上报块信息是告诉NameNode数据块还完好
+
+
+3、MapReduce
+	MapReduce是一个分布式运算程序的编程框架。
+	MapReduce核心功能是将用户编写的业务逻辑代码和自带默认组件整合成一个完整的分布式运算程序，并发运行在一个Hadoop集群上
+	
+	MapReduce将计算过程分为两个阶段：Map和Reduce
+	1) Map阶段并行处理输入数据(分工给多个服务器)
+	2) Reduce阶段对Map结果进行汇总
+	
+	JobTracker: 作业管理。以及被YARN替代，有ApplicationMaster(AM)实现
+	TaskTracker: 作业执行
+
+
+4、YARN
+	资源管理器，资源协调者
+
+YARN组件
+	1) ResourceManager(RM): 管理整个集群的资源(内存、CPU等)
+	2) NodeManager(NM): 管理单个服务器资源
+	3) ApplicationMaster(AM): 管理单个任务实例
+	4) Container: 容器，相当于一台独立的服务器，里面封装了任务运行所需要的资源，内存、CPU、磁盘、网络等
+	5) Schedular: 资源分配器，负责向应用程序分配资源
+
+YARN执行步骤
+	0) Client: 任务解析成可以被执行的单个计算功能
+	1) Client->YARN.ResourceManager: 请求执行任务，并请求一个ApplicationMaster
+	2) YARN.ResourceManager->YARN.NodeManager: 寻找一个可以运行Container的NodeManager
+	3) YARN.ResourceManager->YARN.NodeManager.Container: 在找到的Container上启动ApplicationMaster实例
+	4) YARN.ApplicationMaster->YARN.ResourceManager: ApplicationMaster向ResourceManager进行注册
+	5) Client->YARN.ResourceManager: 获取ApplicationMaster详细信息，与ApplicationMaster进行交互
+	6) YARN.ApplicationMaster->YARN.ResourceManager: 申请计算资源Container
+	7) YARN.ResourceManager.Schedular->YARN.NodeManager: 查找和ApplicationMaster申请相关的NodeManager，获取该NodeManager中可用的Container
+	8) YARN.ResourceManager->YARN.ApplicationMaster: 返回Container资源，并且执行
+	9) YARN.ApplicationMaster: 执行具体的单个计算任务。并且和NodeNamager交互来监控任务的执行进度
+
+注意：
+	1) Client可以有多个
+	2) 集群上可以运行多个ApplicationMaster
+	3) 每个NodeManager上可以有多个Container
+
+
+5、HDFS+MapReduce+YARN关系
+	一个计算任务的整体流程
+	
+整体功能关系
+	YARN负责资源调度。
+	MapReduce负责任务计算。
+	HDFS负责文件存储。
+
+HDFS.NameNode和YARN.ResourceManager关系
+	1) 在所有的HDFS和YARN的框架介绍中，没有具体介绍这两个框架的整合使用，也没有介绍两个框架之间的分工合作。
+	2) 对于HDFS.NameNode和YARN.ResourceManager之间的关系也很模糊。
+	3) NameNode是HDFS的Master节点。ResourceManager是YARN的Master节点。
+	4) NameNode是文件系统的中央管理枢纽。ResourceManager相当于负责管理机器的内存、CPU的操作系统的调度系统。
+	5) 两个框架谈不上分工协作。HDFS可以理解为文件系统，YARN可以理解为Shell
