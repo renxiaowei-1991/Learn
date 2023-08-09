@@ -224,16 +224,75 @@ MapReduce核心运行机制
 		(1) 利用客户指定的InputFormat来获取RecordReader读取数据，形成输入KV对
 		(2) 将输入KV对传递给客户定义的map()方法，做逻辑运算，并将map()方法输出的KV对收集到缓存(环形缓冲区)
 		(3) 将缓存中的KV对按照K 分区,排序 后不断溢写到磁盘文件(先分区再排序)
+		(4) maptask结束后，多个溢写文件按照 分区(Partition)组合，按Key排序后，合并成多个大的溢写文件
+		
 	3) MRAppMaster: 监控到所有maptask进程任务完成之后，会根据客户指定的参数启动相应数量的reducetask进程，并告知reducetask进程要处理的数据范围(数据分区)
 	4) ReduceTask: Reducetask进程启动之后，根据MRAppMaster告知的待处理数据所在位置，进行数据处理，主体流程为：
 		(1) 从若干台maptask运行所在机器上获取到若干个maptask输出结果文件，并在本地进行重新归并排序。
 		(2) 然后按照相同key的KV为一个组，调用客户定义的reduce()方法进行逻辑运算，并收集运算输出的结果KV。
 		(3) 然后调用客户指定的OutputFormat将结果数据输出到外部存储。
 
+MapReduce的Shuffle机制
+	https://blog.csdn.net/woaini886353/article/details/124687084?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522169154230216800185889659%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=169154230216800185889659&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-2-124687084-null-null.142^v92^control&utm_term=mapreduce&spm=1018.2226.3001.4187
+	
+	1、Shuffle概述
+		1) MapReduce中，map阶段处理的数据如何传递给reduce阶段，是mapreduce框架中最关键的一个流程，这个流程就叫Shuffle
+		2) Shuffle: 洗牌、发牌-(核心机制: 数据分区，排序，缓存)
+		3) 具体来说: 就是将MapTask输出的处理结果数据，分发给ReduceTask，并在分发的过程中，对数据按key进行了分区和排序
+	
+	2、Shuffle主要流程
+		1) MapTask收集map()方法输出的KV对，放到内存缓冲区(环形缓冲区)
+		2) 将缓存中的KV对按照K 分区(Partition),排序 后不断溢写到磁盘文件(先分区再排序)。可能会溢写多个文件
+		3) maptask结束后，多个溢写文件按照 分区(Partition)组合，按Key排序后，合并成多个大的溢写文件
+		4) MRAppMaster通知ReduceTask需要处理数据的地址
+		5) ReduceTask从多个MapTask处理结果文件地址中，获取同一个分区(Partition)的数据。
+		6) ReduceTask将获取到的所有数据进行合并(归并排序)(先合并再排序)
+		7) 合并成大文件后，Shuffle的过程就结束了，后面进入ReduceTask的逻辑运算过程
+	
+	注意：
+		Shuffle中的缓冲区大小会影响MapReduce程序的执行效率，原则上说，缓冲区越大，磁盘IO次数越少，执行速度就越快。
+
+MapReduce并行度决定机制
+	1、MapTask并行度决定机制
+		1) 将待处理数据执行逻辑切片(按照一个特定切片大小，将待处理数据划分成逻辑上的多个split(文件切片由FileInputFormat.getSplits()方法完成))
+		2) 每个split分配一个MapTask并行实例处理
+		**FileInputFormat默认切片机制**
+			(1) 简单地按照文件的内容长度进行切片
+			(2) 切片大小，默认等于block大小
+			(3) 切片时不考虑数据集整体，而是逐个针对每一个文件单独切片
+		**FileInputFormat切片大小参数设置**
+			Math.max(minSize,Math.min(maxSize,blockSize))
+			(1) minSize: 默认值(1), 配置参数: mapreduce.input.fileinputformat.split.minsize
+			(2) maxSize: 默认值(Long.MAXValue), 配置参数: mapreduce.input.fileinputformat.split.maxsize
+			(3) blocksize: 文件block块大小, 配置参数: dfs.blocksize
+				默认情况下切片大小=blocksize
+		
+		注意：
+			如果每个task都跑的比较快，但是task比较多。就应该调整分片数，否则就会浪费很多的task启动时间。
+			配置task的JVM重用可以改善该问题。配置参数: mapred.job.reuse.jvm.num.tasks。表示使用一个JVM启动多少个task
+		
+	
+	2、ReduceTask并行度决定机制
+		ReduceTask的数量可以手动设置。
+		
+
+MapReduce编程规范
+	1) 用户编写的程序分成三个部分：Mapper,Reducer,Driver(提交运行MR程序的客户端)
+	2) Mapper的输入数据是KV对的形式(KV的类型可自定义)
+	3) Mapper的输出数据是KV对的形式(KV的类型可自定义
+	4) Mapper中的业务逻辑写在map()方法中
+	5) map()方法(MapTask进程)对每一个<K,V>调用一次
+	6) Reducer的输入数据类型对应Mapper的输出数据类型，也是KV
+	7) Reducer的业务逻辑写在reduce()方法中
+	8) ReduceTask进程对每一组相同K的<K,V>组调用一次reduce()方法
+	9) 用户自定义的Mapper和Reducer都要继承各自的父类
+	10)整个程序需要一个Driver来进行提交，提交的是一个描述了各种必要信息的job对象
+
+
 
 
 4、YARN
-	资源管理器，资源协调者
+	资源管理器，资源调度平台，负责为运算程序提供服务器运算资源，相当于一个分布式的操作系统平台，而MapReduce等运算程序则相当于运行于操作系统之上的应用程序。
 
 YARN组件
 	1) ResourceManager(RM): 管理整个集群的资源(内存、CPU等)
@@ -258,6 +317,15 @@ YARN执行步骤
 	1) Client可以有多个
 	2) 集群上可以运行多个ApplicationMaster
 	3) 每个NodeManager上可以有多个Container
+
+YARN重要概念(理念)
+	1) YARN并不清楚用户提交的程序的运行机制
+	2) YARN只提供运算资源的调度(用户程序向YARN申请资源，YARN就负责分配资源)
+	3) YARN中的主管角色叫ResourceManager
+	4) YARN中具体提供运算资源的角色叫NodeManager
+	5) 这样一来，YARN其实就与运行的用户程序完全解耦，就意味着YARN上可以运行各种类型的分布式运算程序(MapReduce只是其中的一种)(例如: Storm程序,Spark程序,Tez...)
+	6) 所有，Spark,Storm等运算框架都可以整合在YARN上运行，只要他们各自的框架中有符合YARN规范的资源请求机制即可
+	7) YARN就成为了一个通用的资源调度平台，从此，企业中以前存在的各种运算集群都可以整合在一个物理集群上，提高资源利用率，方便数据共享
 
 
 5、HDFS+MapReduce+YARN关系
