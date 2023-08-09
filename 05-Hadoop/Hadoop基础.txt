@@ -289,7 +289,19 @@ MapReduce编程规范
 	10)整个程序需要一个Driver来进行提交，提交的是一个描述了各种必要信息的job对象
 
 
+MapReduce压缩
+	通过压缩编码对mapper或者reducer的输出进行压缩，以减少磁盘IO和文件共享数据传输网络带宽消耗(但相应增加了CPU运算负担)
+	压缩特性运用得当能提高性能，运用不当也可能减低性能
+	
+	Map输出压缩
+		mapreduce.map.output.compress=false
+		mapreduce.map.output.compress.codec=org.apache.hadoop.io.compress.DefaultCodec
 
+	Reduce输出压缩
+		mapreduce.output.fileoutputformat.compress=false
+		mapreduce.output.fileoutputformat.compress.codec=org.apache.hadoop.io.compress.DefaultCodec
+		mapreduce.output.fileoutputformat.compress.type=RECORD
+		
 
 4、YARN
 	资源管理器，资源调度平台，负责为运算程序提供服务器运算资源，相当于一个分布式的操作系统平台，而MapReduce等运算程序则相当于运行于操作系统之上的应用程序。
