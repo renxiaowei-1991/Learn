@@ -216,7 +216,7 @@ MapReduce框架结构
 	3) ReduceTask：负责reduce阶段的整个数据处理流程
 
 	
-MapReduce核心运行机制
+MapReduce核心运行机制 
 	https://blog.csdn.net/woaini886353/article/details/124687084?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522169154230216800185889659%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=169154230216800185889659&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-2-124687084-null-null.142^v92^control&utm_term=mapreduce&spm=1018.2226.3001.4187
 	
 	1) MRAppMaster: 一个mr程序启动的时候，最先启动的是MRAppMaster，MRAppMaster启动后根据本次job的描述信息，计算出需要的maptask实例数量，然后向集群申请机器启动相应数量的maptask进程。
