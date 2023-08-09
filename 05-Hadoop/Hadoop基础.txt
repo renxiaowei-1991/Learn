@@ -196,20 +196,40 @@ HDFS读数据流程(HDFS->Client)
 	
 MapReduce优点
 	1) 易于编程。用户只关心业务逻辑，实现框架的接口
-		可以像写一个串行程序一样写分布式程序
+		可以像写一个串行程序一样写分布式程序。简单的实现一些接口，就可以完成一个分布式程序。
 	2) 良好扩展性。可以动态增加服务器，解决计算资源不够问题
 	3) 高容错性。任何一台机器挂掉，可以将任务转移到其他节点。
 	4) 适合海量数据计算(TB/PB)，几千台服务器同步计算
 
 MapReduce缺点
-	1) 不擅长实时计算(秒级&毫秒级)。Mysql/TiDB/Presto/ClickHouse/ElasticSearch
-	2) 不擅长流式计算(动态输入)。SparkStreaming/Flink
+	1) 不擅长实时计算(秒级&毫秒级)。实时：Mysql/TiDB/Presto/ClickHouse/ElasticSearch
+	2) 不擅长流式计算(动态输入)。流式：SparkStreaming/Flink
 		支持静态数据，批处理
-	3) 不擅长DAG有向无环图计算。Spark
+	3) 不擅长DAG有向无环图计算。DAG：Spark
 		程序之间有依赖，中间过程会造成大量的磁盘ID，性能非常低下
 
-代办：
-	整理一些MapReduce整体流程
+
+MapReduce框架结构
+	一个完整的mapreduce程序在分布式运行时有三类实例进程：
+	1) MRAppMaster：负责整个程序的过程调度及状态协调(YARN.ApplicationMaster)
+	2) MapTask：负责map阶段的整个数据处理流程
+	3) ReduceTask：负责reduce阶段的整个数据处理流程
+
+	
+MapReduce核心运行机制
+	https://blog.csdn.net/woaini886353/article/details/124687084?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522169154230216800185889659%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=169154230216800185889659&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-2-124687084-null-null.142^v92^control&utm_term=mapreduce&spm=1018.2226.3001.4187
+	
+	1) MRAppMaster: 一个mr程序启动的时候，最先启动的是MRAppMaster，MRAppMaster启动后根据本次job的描述信息，计算出需要的maptask实例数量，然后向集群申请机器启动相应数量的maptask进程。
+	2) MapTask: maptask进程启动之后，根据给定的数据切片范围进行数据处理，主体流程为：
+		(1) 利用客户指定的InputFormat来获取RecordReader读取数据，形成输入KV对
+		(2) 将输入KV对传递给客户定义的map()方法，做逻辑运算，并将map()方法输出的KV对收集到缓存(环形缓冲区)
+		(3) 将缓存中的KV对按照K 分区,排序 后不断溢写到磁盘文件(先分区再排序)
+	3) MRAppMaster: 监控到所有maptask进程任务完成之后，会根据客户指定的参数启动相应数量的reducetask进程，并告知reducetask进程要处理的数据范围(数据分区)
+	4) ReduceTask: Reducetask进程启动之后，根据MRAppMaster告知的待处理数据所在位置，进行数据处理，主体流程为：
+		(1) 从若干台maptask运行所在机器上获取到若干个maptask输出结果文件，并在本地进行重新归并排序。
+		(2) 然后按照相同key的KV为一个组，调用客户定义的reduce()方法进行逻辑运算，并收集运算输出的结果KV。
+		(3) 然后调用客户指定的OutputFormat将结果数据输出到外部存储。
+
 
 
 4、YARN
