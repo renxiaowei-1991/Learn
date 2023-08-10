@@ -134,6 +134,7 @@ HDFS写数据流程(Client->HDFS)
 	注意：
 		HDFS写数据的过程中，NameNode会选择距离待上传数据最近距离的DataNode接收数据。
 		这个距离根据 网络拓扑-节点距离计算
+
 HDFS读数据流程(HDFS->Client)
 	1) Client(客户端)->NameNode: 请求下载文件/user/atguigu/ss.avi
 	2) NameNode->Client(客户端): 返回目标文件的元数据
@@ -222,7 +223,7 @@ MapReduce核心运行机制
 	1) MRAppMaster: 一个mr程序启动的时候，最先启动的是MRAppMaster，MRAppMaster启动后根据本次job的描述信息，计算出需要的maptask实例数量，然后向集群申请机器启动相应数量的maptask进程。
 	2) MapTask: maptask进程启动之后，根据给定的数据切片范围进行数据处理，主体流程为：
 		(1) 利用客户指定的InputFormat来获取RecordReader读取数据，形成输入KV对
-		(2) 将输入KV对传递给客户定义的map()方法，做逻辑运算，并将map()方法输出的KV对收集到缓存(环形缓冲区)
+		(2) 将输入KV对传递给客户定义的map()方法，做逻辑运算，并将map()方法输出的KV对收集到缓存(内部缓冲区)(环形缓冲区)
 		(3) 将缓存中的KV对按照K 分区,排序 后不断溢写到磁盘文件(先分区再排序)
 		(4) maptask结束后，多个溢写文件按照 分区(Partition)组合，按Key排序后，合并成多个大的溢写文件
 		
@@ -274,6 +275,9 @@ MapReduce并行度决定机制
 	
 	2、ReduceTask并行度决定机制
 		ReduceTask的数量可以手动设置。
+		1) 设置一个ReduceTask可以处理文件的大小
+		2) 设置ReduceTask任务数最大多少
+		3) 设置ReduceTask具体的数量是多少
 		
 
 MapReduce编程规范
