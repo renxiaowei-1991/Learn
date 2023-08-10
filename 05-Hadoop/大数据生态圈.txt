@@ -58,46 +58,113 @@
 
 
 
-数据来源层
-	数据库(结构化数据)
-	文件日志(半结构化数据)
-	视频、ppt等(非结构化数据)
+一、数据来源层
+1.1、数据库(结构化数据)
+1.2、文件日志(半结构化数据)
+1.3、视频、ppt等(非结构化数据)
 
-数据传输层
-	Sqoop数据传输: 结构化数据
-	Flume日志采集: 半结构化数据
-	Kafka消息队列: 各类数据
+二、数据传输层
+2.1、Sqoop数据传输: 结构化数据
+2.2、Flume日志采集: 半结构化数据
+2.3、Kafka消息队列: 各类数据
 
-数据存储层
-	HDFS文件存储
-	HBase列式数据库
-	Kafka消息队列
+三、数据存储层
+3.1、HDFS文件存储
+3.2、HBase列式数据库
+3.3、Kafka消息队列
 
-资源管理层
-	YARN资源管理
+四、资源管理层
+4.1、YARN资源管理
 
-数据计算层
-	MapReduce离线计算: Hive数据查询
-	Spark Core内存计算
-		Spark Mlib数据挖掘
-		Spark Sql数据查询
-		Spark Streaming实时计算
-	Storm实时计算
-	Flink实时计算
+五、数据计算层
+5.1、MapReduce离线计算: Hive数据查询
+5.2、Spark Core内存计算
+	Spark Mlib数据挖掘
+	Spark Sql数据查询
+	Spark Streaming实时计算
+5.3、Flink实时计算
+5.4、Storm实时计算
 
-任务调度层
-	Oozie任务调度
-	Azkaban任务调度
+六、任务调度层
+6.1、Oozie任务调度
+6.2、Azkaban任务调度
 
-业务模型层
-	业务模型
-	数据可视化
-	业务应用
-	多维分析OLAP
-		kylin
-		ClickHouse
-		ElasticSearch
-		
-	即席查询
-		Presto
-		Impala
+七、业务模型层
+7.1、业务模型
+7.2、数据可视化
+7.3、业务应用
+7.4、多维分析OLAP
+
+7.4.1、kylin
+Kylin介绍
+	Apache Kylin是一个开源的分布式分析引擎，提供Hadoop/Spark之上的SQL查询接口及多维分析(OLAP)能力以支持超大规模数据。能在亚秒查询巨量的Hive表。
+
+Kylin架构
+	1) 数据源: Hadoop,Hive,Kafka,RDBMS
+		支持通过Kylin进行OLAP分析的数据源
+	2) Cube构建引擎(任务引擎): Cube Build Engine
+		这套引擎的设计目的在于处理所有离线任务，其中包括Shell脚本、Java API以及Map Reduce任务等。
+		任务引擎对Kylin当中的全部任务加以管理与协调，从而确保每一项任务都能得到切实执行并解决其间出现的故障。
+	3) 元数据管理工具(元数据): Metadata
+		Kylin是一款元数据驱动型应用程序。元数据管理工具是一大关键性组件，用于对保存在Kylin当中的所有元数据进行管理，其中包括最为重要的cube元数据。
+		其它全部组件的正常运作都需以元数据管理工具为基础。Kylin的元数据存储在HBase中。
+	4) 路由器(路由层)(默认关闭): Routing
+		最初设计时曾考虑过将Kylin不能执行的查询引导去Hive中继续执行，但在实践后发现Hive与Kylin的速度差异过大，导致用户无法对查询的速度有一致的期望，很可能大多数查询几秒内就返回结果了，而有些查询则要等几分钟到几十分钟，因此体验非常糟糕。最后这个路由功能在发行版中默认关闭。
+	5) 数据存储: HBase/OLAP Cube
+		Kylin预处理号的Cube模型数据存储在HBase中
+	6) 查询引擎(查询引擎层): Query Engine
+		当Cube准备就绪后，查询引擎就能够获取并解析用户查询。它随后会与系统中的其它组件进行交互，从而向用户返回对应的结果。
+	7) REST服务层: REST Server
+		REST Server是一套面向应用程序开发的入口点，旨在实现针对Kylin平台的应用开发工作。此类应用程序可以提供查询、获取结果、触发cube构建任务、获取元数据以及获取用户权限等等。另外可以通过Restful接口实现SQL查询。
+	8) 应用层: Web APP/REST API, BI Tools/JDBC/ODBC
+		应用程序调度
+		BI工具数据查询
+
+Kylin特点
+	1) 支持标准SQL接口
+	2) 支持超大规模数据集
+	3) 亚秒级相应
+	4) 可伸缩性和高吞吐率
+	5) BI工具集成
+
+Kylin使用
+	1) 创建工程
+	2) 获取数据源: Hive表,Spark表...
+	3) 创建Model
+		(1) 填写Model信息
+		(2) 指定事实表
+		(3) 选择维度表
+		(4) 指定事实表和维度表的关联条件
+		(5) 指定维度字段
+		(6) 指定度量字段
+		(7) 指定事实表分区字段(仅支持时间分区)
+	4) 构建Cube
+		(1) 填写Cube信息，选择Cube所依赖的Model
+		(2) 选择所需的维度
+		(3) 选择所需度量值
+		(4) Cube自动合并设置
+			Cube需按照日期分区字段每天进行构建，每次构建的结果会保存在HBase中的一张表中，为提高查询效率，需将每日的Cube进行合并，此处可设置合并周期。
+		(5) Kylin高级配置(Cube优化)
+		(6) Kylin相关属性配置覆盖
+		(7) Cube信息总览(Cube创建完成)
+		(8) 构建Cube(计算)
+		(9) 选择要构建的时间区间
+		(10) 查看构建进度
+	注意：
+		Kylin不能处理Hive表中的复杂数据类型(Array,Map,Struct)，即便复杂类型的字段并未参与到计算之中。因此在加载Hive数据源时，不能直接加载带有复杂数据类型字段的表。需要将复杂数据类型处理掉以后才能加载。
+
+Kylin Cube构建原理
+	1) 
+	2) 
+	3) 
+	4) 
+	5) 
+	6) 
+
+
+7.4.2、ClickHouse
+7.4.3、ElasticSearch
+	
+7.5、即席查询
+	Presto
+	Impala
