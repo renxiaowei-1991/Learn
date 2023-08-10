@@ -119,7 +119,7 @@ Hortonworks：文档较好。产品HDP
 HDFS写数据流程(Client->HDFS)
 	1) Client(客户端)->NameNode: 向NameNode请求上传文件/user/atguigu/ss.avi
 	2) NameNode->Client(客户端): 响应可以上传文件
-		检查目录数是否可以创建文件
+		检查目录是否可以创建文件
 		2.1 检查权限
 		2.2 检查目录结构(目录是否存在)
 	3) Client(客户端)->NameNode: 请求上传第一个Block(0-128M)，请返回DataNode
