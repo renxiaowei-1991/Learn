@@ -328,7 +328,7 @@ YARN执行步骤
 注意：
 	1) Client可以有多个
 	2) 集群上可以运行多个ApplicationMaster
-	3) 每个NodeManager上可以有多个Container
+	3) 每个NodeManager上可以有多个Container 
 
 YARN重要概念(理念)
 	1) YARN并不清楚用户提交的程序的运行机制
