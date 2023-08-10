@@ -1,19 +1,103 @@
-1、数据采集
+数据处理步骤
+1、数据来源
+	Oracle
+	MySQL
+	HBase
+	日志数据
+	...
 
-2、数据传输
+2、数据采集
+	Sqoop
+	DataX
+	Flume
 
-3、数据存储
+3、数据传输
+	Sqoop
+	DataX
+	Kafka
 
-4、数据计算
+4、数据存储
+	HDFS
+		NoSQL
+	HBase
+		列式数据库
+	Kafka
 
 5、资源管理
+	YARN
 
-6、数据查询
 
-7、数据同步
+6、数据计算
+	MapReduce
+	Spark
+	Flink
 
-8、数据分析
+7、数据查询
+	Hive
+	Spark
+	Tez
+	Presto
+	Impala
 
-9、数据展示
+8、数据同步
+	Spoop
+	DataX
 
-10、作业调度
+9、数据分析(OLAP)
+	Kylin
+	ClickHouse
+	ElasticSearch
+
+10、数据展示(BI)
+	帆软
+	Cognos
+
+11、作业调度
+	Oozie
+	Zookeeper
+
+
+
+数据来源层
+	数据库(结构化数据)
+	文件日志(半结构化数据)
+	视频、ppt等(非结构化数据)
+
+数据传输层
+	Sqoop数据传输: 结构化数据
+	Flume日志采集: 半结构化数据
+	Kafka消息队列: 各类数据
+
+数据存储层
+	HDFS文件存储
+	HBase列式数据库
+	Kafka消息队列
+
+资源管理层
+	YARN资源管理
+
+数据计算层
+	MapReduce离线计算: Hive数据查询
+	Spark Core内存计算
+		Spark Mlib数据挖掘
+		Spark Sql数据查询
+		Spark Streaming实时计算
+	Storm实时计算
+	Flink实时计算
+
+任务调度层
+	Oozie任务调度
+	Azkaban任务调度
+
+业务模型层
+	业务模型
+	数据可视化
+	业务应用
+	多维分析OLAP
+		kylin
+		ClickHouse
+		ElasticSearch
+		
+	即席查询
+		Presto
+		Impala
