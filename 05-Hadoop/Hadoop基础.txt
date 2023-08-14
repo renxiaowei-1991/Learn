@@ -153,7 +153,7 @@ HDFS读数据流程(HDFS->Client)
 	1) 第一次启动NameNode格式化后，创建Fsimage和Edits文件。如果不是第一次启动，直接加载编辑日志和镜像文件到内存
 	2) 客户端对元数据进行增删改的请求
 	3) NameNode记录操作日志，更新滚动日志
-	4) nameNode在内存中对元数据进行增删改
+	4) NameNode在内存中对元数据进行增删改
 第二阶段：Secondary NameNode工作
 	1) Secondary NameNode询问NameNode是否需要CheckPoine。直接带回NameNode是否检查结果
 	2) Secondary NameNode请求执行CheckPoint
