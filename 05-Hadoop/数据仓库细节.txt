@@ -26,6 +26,8 @@
 索引
 数据治理&数据质量&元数据管理
 
+数据迁移
+
 Hadoop&Spark&Flink
 
 hive
