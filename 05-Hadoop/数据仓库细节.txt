@@ -5,5 +5,54 @@
     数据链路不可逆原则：从数据源产生数据到缓冲/贴源明细层(ODM)到公共层(IDM/SDM)到集市应用层(APP)，在5k集群环境内部不支持加工数据的作业逆向依赖
     
 数据漂移
+	凌晨0点附近数据
 数据膨胀
     金额膨胀问题
+	数据翻倍
+数仓模型跨层依赖问题
+	一般只依赖上一层
+	跨层依赖样例：应用层依赖贴源层
+公共层
+	基础层
+	汇总层
+口径一致性问题
+指标口径唯一性
+传统数仓&大数据数仓
+建模方式：范式建模&维度建模
+建模方式：ER模型&维度建模
+	ER模型：面向主题
+	维度建模：事实表&维度表
+维度建模：星型模型&雪花模型
+索引
+数据治理&数据质量&元数据管理
+
+Hadoop&Spark&Flink
+
+hive
+	hive on mapreduce
+	hive on spark
+	MapReduce&Spark比较
+		hive组成&hive优化
+		spark组成&spark优化
+		
+OLAP分类及相关组件
+	Kylin&ClickHouse&ElasticSearch
+
+NoSQL数据库
+	Hive
+	Spark
+列式数据库
+	HBase&Kylin&ClickHouse&ElasticSearch
+
+任务执行过程
+	SQL转MapReduce任务
+	YARN调度MapReduce任务(其它任务也一样)
+	MapReduce任务执行过程
+	
+实时
+	Flink
+	Flume
+	Kafka
+
+
+	
