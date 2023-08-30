@@ -2,3 +2,203 @@
     想要通过网页显示什么内容
 	想要使用什么类型的资源展示网页内容
 	网页布局是怎么样的
+
+2、样例-萨摩耶-猎豹的第一篇成长日记
+
+
+一、HTML
+1、HTML:
+	超文本标记语言
+	标签+属性
+	https://m.w3cschool.cn/htmltags/html-reference.html
+	
+	元素=开始标签(+属性)+内容+结束标签
+	属性 符号=""(双引号和单引号都可以)
+2、元素类别：
+	块级元素：通常用于展示页面上层结构化的内容。形式上通常如块状显示。如：列表、导航菜单、页脚等。可以嵌入其它块级元素中
+		<p>周杰伦是歌手。</p><p>周杰伦是音乐制作人。</p><p>周杰伦是电影导演。</p>
+	内联元素：通常出现在块级元素中并包裹着一小部分文档内容。形式上通常如行状显示。
+		<em>周杰伦是歌手。</em><em>周杰伦是音乐制作人。</em><em>周杰伦是电影导演。</em>
+	空元素：只有开始标签，没有结束标签
+
+
+2、标签
+<!DOCTYPE html>
+	文档类型
+<!--....-->
+	注释
+<html></html>
+	html页面
+<head></head>
+	文件头
+	
+文件属性：
+	<meta>
+	编码格式
+		charset="utf-8": 文件打开的编码格式
+文件标题：
+	<title></title>
+文件体：
+	<body></body>
+标题：
+	<h></h>
+	<h1> ... <h6> 表示1级至6级标题。字体逐渐变小
+段落：
+	<p></p>
+	段落是文本
+图片：
+	<img>
+	图片格式可以是png,jpg,svg等
+	图片路径：
+		src=""
+超链接：
+	<a></a>
+换行：
+	<br>
+定义代码格式：
+	<code>一段电脑代码</code>
+
+
+按钮：
+	<button type="button">登录</button>
+
+
+定义文本粗体：
+	<b></b>
+	<strong></strong>
+定义文本居中(h5不支持)：
+	<center></center>
+定义被删除文本：
+	<del></del>
+
+定义命令按钮：
+	<command></command>
+		比如单选按钮、复选框或按钮
+定义对话框，比如提示框：
+	<disalog></disalog>
+
+定义表格：
+	<table></table>
+	定义表格标题：
+		<caption></caption>
+	定义表格属性：
+		<colgroup></colgroup>
+			定义表格中供格式化的列祖，定义了表中的一组列表。
+		<col>
+			为表格中的一列或多列设置属性值
+			只能在<table>元素或者<colgroup>元素内部使用
+			<table border="1">
+			  <colgroup>
+				<col span="2" style="background-color:red">
+				<col style="background-color:yellow">
+			  </colgroup>
+			  <tr>
+				<th>ISBN</th>
+				<th>Title</th>
+				<th>Price</th>
+			  </tr>
+			  <tr>
+				<td>3476896</td>
+				<td>My first HTML</td>
+				<td>$53</td>
+			  </tr>
+			</table>
+	定义表头：
+		<thead></thead>
+	定义表体：
+		<tbody></tbody>
+	定义行:
+		<tr></tr>
+	定义表头单元格:
+		<th></th>
+	定义表体单元格:
+		<td></td>
+
+			
+定义表单：
+	<form></form>
+定义框架集的窗口或框架
+	<frame></frame>
+定义框架集：
+	<frameset></frameset>
+
+定义文档格式：
+	<div></div>
+	<span></span>
+
+
+元素
+	<!--...__>
+	<!DOCTYPE html>
+	<html></html>
+	<head></head>
+	<body></body>
+	<p></p>
+	<a></a>
+	<b></b>
+	<del></del>
+	<hr>
+	<i></i>
+	<br>
+	<img>
+	<video></video>
+	<source>
+	<button></button>
+	<input></input>
+	<output></output>
+
+	<table></table>
+	<caption></caption>
+	<colgroup></colgroup>
+	<col>
+	<tbody></tbody>
+	<thead></thead>
+	<tr></tr>
+	<th></th>
+	<td></td>
+
+	<command></command>
+	<dialog></dialog>
+	<menu></menu>
+	<code></code>
+
+	<frame></frame>
+	<frameset></frameset>
+	<iframe></iframe>
+
+
+	<form></form>
+	<fieldset></fieldset>
+	<select></select>
+	<font></font>
+	<dl></dl>
+	<dt></dt>
+	<dd></dd>
+		<dl>
+			<dt>Coffee</dt>
+				<dd>Black hot drink</dd>
+			<dt>Milk</dt>
+				<dd>White cold drink</dd>
+		</dl>
+	<li></li>
+	<ol></ol>
+	<ul></ul>
+	<link>
+	<script></script>
+	<style></style>
+	<div></div>
+	<span></span>
+
+	<sup></sup>
+	<sub></sub>
+
+	<var>
+	<em></em>
+
+	
+3、属性：
+	class
+	id
+	src
+	href
+	
